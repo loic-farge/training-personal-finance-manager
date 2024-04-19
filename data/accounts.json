@@ -1,0 +1,32 @@
+[
+    {
+        "name": "techcombank",
+        "amount": 0.0,
+        "currency": "vnd"
+    },
+    {
+        "name": "kucoin-funding",
+        "amount": 0.0,
+        "currency": "usdt"
+    },
+    {
+        "name": "kucoin-trading",
+        "amount": 0.0,
+        "currency": "usdt"
+    },
+    {
+        "name": "kucoin-bots",
+        "amount": 0.0,
+        "currency": "usdt"
+    },
+    {
+        "name": "nexo",
+        "amount": 0.0,
+        "currency": "usdt"
+    },
+    {
+        "name": "nexo",
+        "amount": 0.0,
+        "currency": "nexo"
+    }
+]
