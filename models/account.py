@@ -8,4 +8,4 @@ class Account:
 
     def save(self):
         repository = AccountRepository("data/accounts.json")
-        repository.save_account(self.__dict__)
+        accounts = repository.save_account(self.__dict__)
