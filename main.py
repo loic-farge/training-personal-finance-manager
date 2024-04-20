@@ -2,7 +2,7 @@ from ui.cli import CLI
 
 def main():
     cli = CLI()
-    cli.start()
+    cli.run()
 
 if __name__ == '__main__':
     main()

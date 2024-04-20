@@ -1,39 +1,52 @@
 from services.account_service import AccountService
-import pandas as pd
+from tabulate import tabulate
 
 class CLI:
     def __init__(self):
-        self.running = True
+        self.service = AccountService()
 
-    def start(self):
-        print("Welcome to the Personal Finance Manager!")
-        while self.running:
-            command = input("Enter command (type 'help' for options or 'exit' to quit): ").strip().lower()
-            if command == 'exit':
-                self.running = False
-                print("Thank you for using the Personal Finance Manager. Goodbye!")
-            elif command == 'help':
-                self.display_help()
-            else:
-                self.process_command(command)
-
-    def process_command(self, command_input):
-        parts = command_input.split(maxsplit=1)
-        command = parts[0]
-        arguments = parts[1] if len(parts) > 1 else ""
-
-        if command == 'create_account':
-            args = arguments.split();
-            AccountService.create_account(args[0], args[1])
-            print("Account has been created")
-        elif command == 'view_accounts':
-            print(pd.DataFrame(AccountService.get_accounts()))
+    def display_accounts(self):
+        accounts = self.service.view_accounts()
+        if accounts:
+            accounts_data = [
+                {"ID": acc.account_id, "Name": acc.name, "Currency": acc.currency, "Amount": acc.amount}
+                for acc in accounts
+            ]
+            print(tabulate(accounts_data, headers="keys", tablefmt="grid"))
         else:
-            print("Unknown command. Type 'help' for a list of commands.")
+            print("No accounts to display.")
 
-    def display_help(self):
-        print("""
-Available commands:
-- create_account: Add a new account
-- exit: Exit the program
-        """)
+    def add_account(self):
+        name = input("Enter name: ")
+        currency = input("Enter currency: ")
+        amount = float(input("Enter amount: "))
+        account = self.service.create_account(name, currency, amount)
+        print(f"Account created: {account.account_id}")
+
+    def update_account(self):
+        account_id = input("Enter account ID: ")
+        name = input("Enter new name: ")
+        currency = input("Enter new currency: ")
+        if self.service.update_account(account_id, name, currency):
+            print("Account updated successfully.")
+        else:
+            print("Account update failed.")
+
+    def run(self):
+        commands = {
+            '1': self.display_accounts,
+            '2': self.add_account,
+            '3': self.update_account,
+            '0': self.exit_cli
+        }
+        while True:
+            choice = input("1. Display Accounts\n2. Add Account\n3. Update Account\n0. Exit\nChoose an option: ")
+            action = commands.get(choice)
+            if action:
+                action()
+            else:
+                print("Invalid option")
+
+    def exit_cli(self):
+        print("Thank you for using the finance manager. Goodbye!")
+        exit(0)
