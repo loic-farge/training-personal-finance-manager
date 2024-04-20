@@ -8,14 +8,12 @@ class CLI:
         self.account_service = AccountService()
         self.category_service = CategoryService()
         self.setting_service = SettingService()
+        self.current_account_id = None
 
     def display_settings(self):
         settings = self.setting_service.view_settings()
         if settings:
-            settings_data = [
-                {"Name": "Base Currency", "Value": set.base_currency}
-                for set in settings
-            ]
+            settings_data = [{"Name": "Base Currency", "Value": setting.base_currency} for setting in settings]
             print(tabulate(settings_data, headers="keys", tablefmt="grid"))
         else:
             print("No settings to display.")
@@ -25,27 +23,27 @@ class CLI:
         self.setting_service.update_settings(base_currency)
         print("Settings have been updated")
 
-    def display_categories(self):
-        categories = self.category_service.view_categories()
+    def view_account_detail(self, account_id):
+        # Implementation needed
+        pass
+
+    def display_categories(self, account_id):
+        categories = self.category_service.view_categories(account_id)
         if categories:
-            categories_data = [
-                {"ID": cat.category_id, "Account ID": cat.account_id, "Name": cat.name}
-                for cat in categories
-            ]
+            categories_data = [{"ID": cat.category_id, "Name": cat.name} for cat in categories]
             print(tabulate(categories_data, headers="keys", tablefmt="grid"))
         else:
             print("No categories to display.")
 
-    def add_category(self):
-        account_id = input("Enter account ID: ")
+    def add_category(self, account_id):
         name = input("Enter name: ")
         category = self.category_service.create_category(account_id, name)
         print(f"Category created: {category.category_id}")
 
-    def update_category(self):
+    def update_category(self, account_id):
         category_id = input("Enter category ID: ")
         name = input("Enter new name: ")
-        if self.category_service.update_category(category_id, name):
+        if self.category_service.update_category(category_id, account_id, name):
             print("Category updated successfully.")
         else:
             print("Category update failed.")
@@ -77,14 +75,42 @@ class CLI:
         else:
             print("Account update failed.")
 
+    def manage_account(self):
+        self.current_account_id = input("Enter Account ID: ")
+        account = self.account_service.find_account_by_id(self.current_account_id)
+        if not account:
+            print("Account not found.")
+            return
+        commands = {
+            '1': self.view_account_detail,
+            '2': self.display_categories,
+            '3': self.add_category,
+            '4': self.update_category,
+            '0': 'return'
+        }
+        while True:
+            choice = input("""
+1. View Account Detail
+2. Display Categories
+3. Add Category
+4. Update Category
+0. Return to Main Menu
+""")
+            action = commands.get(choice)
+            if action == 'return':
+                self.current_account_id = None
+                return
+            if action:
+                action(self.current_account_id)
+            else:
+                print("Invalid option")
+
     def run(self):
         commands = {
             '1': self.display_accounts,
             '2': self.add_account,
             '3': self.update_account,
-            '4': self.display_categories,
-            '5': self.add_category,
-            '6': self.update_category,
+            '4': self.manage_account,
             '98': self.display_settings,
             '99': self.update_settings,
             '0': self.exit_cli
@@ -95,12 +121,7 @@ class CLI:
 1. Display Accounts
 2. Add Account
 3. Update Account
-----------------------
-MANAGE CATEGORIES
-----------------------
-4. Display Categories
-5. Add Category
-6. Update Category
+4. Manage Account
 ----------------------
 MANAGE SETTINGS
 ----------------------
@@ -108,7 +129,7 @@ MANAGE SETTINGS
 99. Update Settings
 ----------------------
 0. Exit
- Choose an option: """)
+Choose an option: """)
             action = commands.get(choice)
             if action:
                 action()

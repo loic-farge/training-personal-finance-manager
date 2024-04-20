@@ -25,3 +25,6 @@ class AccountService:
             account.currency = currency
             return self.repository.update_account(account)
         return False
+    
+    def find_account_by_id(self, account_id):
+        return self.repository.find_account_by_id(account_id)
