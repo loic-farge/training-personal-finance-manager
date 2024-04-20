@@ -1,7 +1,7 @@
-from ui.cli import CLI
+from ui.main import MainCLI
 
 def main():
-    cli = CLI()
+    cli = MainCLI()
     cli.run()
 
 if __name__ == '__main__':

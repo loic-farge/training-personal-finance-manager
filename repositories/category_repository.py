@@ -5,6 +5,9 @@ class CategoryRepository:
     def __init__(self, filename='data/categories.json'):
         self.filename = filename
 
+    def set_storage_filename(self, filename):
+        self.filename = filename
+
     def load_categories(self, account_id):
         categories_data = read_json(self.filename)
         return [Category.from_dict(category) for category in categories_data if category['account_id'] == account_id]
