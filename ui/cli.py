@@ -40,7 +40,14 @@ class CLI:
             '0': self.exit_cli
         }
         while True:
-            choice = input("1. Display Accounts\n2. Add Account\n3. Update Account\n0. Exit\nChoose an option: ")
+            choice = input("""MANAGE ACCOUNTS
+----------------------
+1. Display Accounts
+2. Add Account
+3. Update Account
+----------------------
+0. Exit
+ Choose an option: """)
             action = commands.get(choice)
             if action:
                 action()
