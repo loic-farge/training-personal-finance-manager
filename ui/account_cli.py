@@ -18,7 +18,7 @@ class AccountCLI:
         accounts = self.account_service.view_accounts()
         if accounts:
             accounts_data = [
-                {"ID": acc.account_id, "Name": acc.name, "Balance": f"{format_currency(acc.amount, acc.currency)} {acc.currency}"}
+                {"ID": acc.account_id, "Name": acc.name, "Balance": f"{format_currency(acc.amount, acc.currency)} {acc.currency}", "Is Saving?": acc.is_saving}
                 for acc in accounts
             ]
             print(tabulate(accounts_data, headers="keys", tablefmt="grid"))
@@ -29,14 +29,16 @@ class AccountCLI:
         name = input("Enter name: ")
         currency = input("Enter currency: ")
         amount = float(input("Enter amount: "))
-        account = self.account_service.create_account(name, currency, amount)
+        is_saving = True if input("Is Saving Account (True/False): ").lower() == 'true' else False
+        account = self.account_service.create_account(name, currency, amount, is_saving)
         print(f"Account created: {account.account_id}")
 
     def update_account(self):
         account_id = input("Enter account ID: ")
         name = input("Enter new name: ")
         currency = input("Enter new currency: ")
-        if self.account_service.update_account(account_id, name, currency):
+        is_saving = True if input("Is Saving Account (True/False): ").lower() == 'true' else False
+        if self.account_service.update_account(account_id, name, currency, None, is_saving):
             print("Account updated successfully.")
         else:
             print("Account update failed.")
@@ -75,43 +77,44 @@ class AccountCLI:
         account = self.account_service.find_account_by_id(account_id)
         if account:
             transactions = self.transaction_service.view_transactions(account_id)
-            income_transactions = [t for t in transactions if t.category_id is '1']
-
+            
             account_data = [
                 {"Information": "Account ID", "Value": account.account_id},
                 {"Information": "Name", "Value": account.name},
-                {"Information": "Total Income", "Value": f"{format_currency(sum(float(t.amount) for t in income_transactions), account.currency)} {account.currency}"},
+                {"Information": "Is Saving", "Value": account.is_saving},
                 {"Information": "Balance", "Value": f"{format_currency(account.amount, account.currency)} {account.currency}"}
             ]
+
+            if (account.is_saving == False):
+                income_transactions = [t for t in transactions if t.category_id is '1']
+                account_data.append({"Information": "Total Income", "Value": f"{format_currency(sum(float(t.amount) for t in income_transactions), account.currency)} {account.currency}"})
+
             print(tabulate(account_data, headers="keys", tablefmt="grid"))
 
-            # This is a report for spending account / todo: add account type in account and add is_reported in category
-            debit_transactions = [t for t in transactions if t.category_id is not '1']
-            total_expenses = sum(float(t.amount) for t in debit_transactions)
+            if (account.is_saving == False):
+                debit_transactions = [t for t in transactions if t.category_id is not '1']
+                total_expenses = sum(float(t.amount) for t in debit_transactions)
 
-            expenses_by_category = {}
-            for trans in debit_transactions:
-                if trans.category_id in expenses_by_category:
-                    expenses_by_category[trans.category_id]['amount'] += float(trans.amount)
-                    expenses_by_category[trans.category_id]['count'] += 1
-                else:
-                    expenses_by_category[trans.category_id] = {}
-                    expenses_by_category[trans.category_id]['amount'] = float(trans.amount)
-                    expenses_by_category[trans.category_id]['count'] = 1
+                expenses_by_category = {}
+                for trans in debit_transactions:
+                    if trans.category_id in expenses_by_category:
+                        expenses_by_category[trans.category_id]['amount'] += float(trans.amount)
+                        expenses_by_category[trans.category_id]['count'] += 1
+                    else:
+                        expenses_by_category[trans.category_id] = {}
+                        expenses_by_category[trans.category_id]['amount'] = float(trans.amount)
+                        expenses_by_category[trans.category_id]['count'] = 1
 
-            # Prepare data for tabulation and calculate percentages
-            if expenses_by_category:
-                expense_data = [
-                    {
-                        "Category": self.category_service.find_category_by_id(category_id, account_id).name,
-                        "Total Expenses": f"{format_currency(expenses['amount'], account.currency)} {account.currency}",
-                        "Number of Transactions": expenses['count'],
-                        "Percentage": f"{(expenses['amount'] / total_expenses * 100):.2f}%"
-                    } for category_id, expenses in expenses_by_category.items()
-                ]
-                print("\nExpense Report by Category:")
-                print(tabulate(expense_data, headers="keys", tablefmt="grid"))
+                if expenses_by_category:
+                    expense_data = [
+                        {
+                            "Category": self.category_service.find_category_by_id(category_id, account_id).name,
+                            "Total Expenses": f"{format_currency(expenses['amount'], account.currency)} {account.currency}",
+                            "Number of Transactions": expenses['count'],
+                            "Percentage": f"{(expenses['amount'] / total_expenses * 100):.2f}%"
+                        } for category_id, expenses in expenses_by_category.items()
+                    ]
+                    print("\nExpense Report by Category:")
+                    print(tabulate(expense_data, headers="keys", tablefmt="grid"))
         else:
             print("No accounts to display.")
-
-    # Other methods
