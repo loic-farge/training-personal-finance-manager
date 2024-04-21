@@ -11,7 +11,11 @@ class CategoryService:
 
     def create_category(self, account_id, name):
         self.update_account_filename(account_id)
-        category_id = uuid.uuid4().hex
+        categories = self.view_categories(account_id)
+        if categories:
+            category_id = max(int(cat.category_id) for cat in categories) + 1
+        else:
+            category_id = 1
         new_category = Category(account_id, name, category_id)
         categories = self.repository.load_categories(account_id)
         categories.append(new_category)
@@ -25,9 +29,13 @@ class CategoryService:
 
     def update_category(self, category_id, account_id, name):
         self.update_account_filename(account_id)
-        category = self.repository.find_category_by_id(category_id)
+        category = self.repository.find_category_by_id(category_id, account_id)
         if category:
             category.account_id = account_id
             category.name = name
-            return self.repository.update_category(category)
+            return self.repository.update_category(category, account_id)
         return False
+    
+    def find_category_by_id(self, category_id, account_id):
+        self.update_account_filename(account_id)
+        return self.repository.find_category_by_id(category_id, account_id)

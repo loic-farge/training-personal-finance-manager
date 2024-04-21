@@ -1,11 +1,13 @@
 from ui.account_cli import AccountCLI
 from ui.category_cli import CategoryCLI
+from ui.transaction_cli import TransactionCLI
 from ui.setting_cli import SettingCLI
 
 class MainCLI:
     def __init__(self):
         self.account_cli = AccountCLI()
         self.category_cli = CategoryCLI()
+        self.transaction_cli = TransactionCLI()
         self.setting_cli = SettingCLI()
     
     def main_menu(self):

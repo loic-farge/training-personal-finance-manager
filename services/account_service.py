@@ -18,11 +18,13 @@ class AccountService:
         accounts = self.repository.load_accounts()
         return accounts
 
-    def update_account(self, account_id, name, currency):
+    def update_account(self, account_id, name, currency, amount=None):
         account = self.repository.find_account_by_id(account_id)
         if account:
             account.name = name
             account.currency = currency
+            if amount is not None:
+                account.amount = amount
             return self.repository.update_account(account)
         return False
     
