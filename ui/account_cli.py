@@ -88,6 +88,9 @@ class AccountCLI:
             if (account.is_saving == False):
                 income_transactions = [t for t in transactions if t.category_id is '1']
                 account_data.append({"Information": "Total Income", "Value": f"{format_currency(sum(float(t.amount) for t in income_transactions), account.currency)} {account.currency}"})
+            else:
+                interest_transactions = [t for t in transactions if t.category_id is '3']
+                account_data.append({"Information": "Total Interest", "Value": f"{format_currency(sum(float(t.amount) for t in interest_transactions), account.currency)} {account.currency}"})
 
             print(tabulate(account_data, headers="keys", tablefmt="grid"))
 
